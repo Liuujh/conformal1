@@ -55,13 +55,21 @@ lm.funs = function(intercept=TRUE, lambda=0) {
     else {
       chol.R = vector(mode="list",length=m)
       for (j in 1:m) {
-        chol.R[[j]] = chol(crossprod(x) + (lambda[j] + delta)*diag(v))
+        A = crossprod(x) + lambda[j] * diag(v)
+        A[is.na(A)] = 0
+        A[is.infinite(A)] = 0
+        svd.R[[j]] = svd(A)
       }
     }
 
     beta = matrix(0,p+intercept,m)
     for (j in 1:m) {
-      beta[,j] = chol.solve(chol.R[[j]], t(x) %*% y)
+      U = svd.R[[j]]$u
+      D = svd.R[[j]]$d
+      V = svd.R[[j]]$v
+      D_inv = diag(1 / pmax(D, 1e-8))
+      beta[,j] = V %*% D_inv %*% t(U) %*% t(x) %*% y
+      print(dim(t(x), dim(y))
     }
     
     return(list(beta=beta,chol.R=chol.R))

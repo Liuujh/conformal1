@@ -47,23 +47,27 @@ lm.funs = function(intercept=TRUE, lambda=0) {
       v = c(0,v)
     }
 
-    # Compute Cholesky factorization, only if we need to
+    # Compute SVD only if we need to
     if (!is.null(out)) {
-      chol.R = out$chol.R
+      svd.R = out$svd.R
     }
     else {
-      chol.R = vector(mode="list",length=m)
+      svd.R = vector(mode="list",length=m)
       for (j in 1:m) {
-        chol.R[[j]] = chol(crossprod(x) + (lambda[j] + delta)*diag(v))
+        A = crossprod(x) + lambda[j] * diag(v)
+        svd.R[[j]] = svd(A)
       }
     }
 
     beta = matrix(0,p+intercept,m)
     for (j in 1:m) {
-      beta[,j] = chol.solve(chol.R[[j]], t(x) %*% y)
+      U = svd.R[[j]]$u
+      D = svd.R[[j]]$d
+      V = svd.R[[j]]$v
+      beta[, j] = V %*% (t(U) %*% y) / D
     }
     
-    return(list(beta=beta,chol.R=chol.R))
+    return(list(beta=beta,svd.R=svd.R))
   }
 
   # Prediction function

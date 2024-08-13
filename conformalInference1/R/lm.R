@@ -69,7 +69,7 @@ lm.funs = function(intercept=TRUE, lambda=0) {
       V = svd.R[[j]]$v
       D_inv = diag(1 / pmax(D, 1e-8))
       beta[,j] = V %*% D_inv %*% t(U) %*% t(x) %*% y
-      print(dim(t(x), dim(y))
+      print(dim(t(x)), dim(y))
     }
     
     return(list(beta=beta,chol.R=chol.R))

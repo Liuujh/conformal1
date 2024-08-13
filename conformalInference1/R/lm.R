@@ -1,3 +1,4 @@
+
 #' Linear regression training and prediction functions, and special
 #'   leave-one-out fitting function.
 #'
@@ -34,7 +35,7 @@
 lm.funs = function(intercept=TRUE, lambda=0) {
   check.bool(intercept)
   m = length(lambda)
-  delta = 1e-6
+  delta = 1e-4
   for (j in 1:m) check.pos.num(lambda[j])
 
   # Training function
@@ -47,29 +48,23 @@ lm.funs = function(intercept=TRUE, lambda=0) {
       v = c(0,v)
     }
 
-    # Compute SVD only if we need to
+    # Compute Cholesky factorization, only if we need to
     if (!is.null(out)) {
-      svd.R = out$svd.R
+      chol.R = out$chol.R
     }
     else {
-      svd.R = vector(mode="list",length=m)
+      chol.R = vector(mode="list",length=m)
       for (j in 1:m) {
-        A = crossprod(x) + lambda[j] * diag(v)
-        A[is.na(A)] = 0
-        A[is.infinite(A)] = 0
-        svd.R[[j]] = svd(A)
+        chol.R[[j]] = chol(crossprod(x) + (lambda[j] + delta)*diag(v))
       }
     }
 
     beta = matrix(0,p+intercept,m)
     for (j in 1:m) {
-      U = svd.R[[j]]$u
-      D = svd.R[[j]]$d
-      V = svd.R[[j]]$v
-      beta[, j] = V %*% (t(U) %*% y) / D
+      beta[,j] = chol.solve(chol.R[[j]], t(x) %*% y)
     }
     
-    return(list(beta=beta,svd.R=svd.R))
+    return(list(beta=beta,chol.R=chol.R))
   }
 
   # Prediction function

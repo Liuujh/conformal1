@@ -55,6 +55,8 @@ lm.funs = function(intercept=TRUE, lambda=0) {
       svd.R = vector(mode="list",length=m)
       for (j in 1:m) {
         A = crossprod(x) + lambda[j] * diag(v)
+        A[is.na(x)] = 0
+        A[is.infinite(x)] = 0
         svd.R[[j]] = svd(A)
       }
     }

@@ -34,6 +34,7 @@
 lm.funs = function(intercept=TRUE, lambda=0) {
   check.bool(intercept)
   m = length(lambda)
+  delta = 1e-6
   for (j in 1:m) check.pos.num(lambda[j])
 
   # Training function
@@ -53,7 +54,7 @@ lm.funs = function(intercept=TRUE, lambda=0) {
     else {
       chol.R = vector(mode="list",length=m)
       for (j in 1:m) {
-        chol.R[[j]] = chol(crossprod(x) + lambda[j]*diag(v))
+        chol.R[[j]] = chol(crossprod(x) + (lambda[j] + delta)*diag(v))
       }
     }
 
